@@ -1,5 +1,5 @@
 import React, { act } from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
@@ -102,6 +102,7 @@ describe('TODO App', () => {
           title,
           description: description || '',
           due_date: req.body.due_date || null,
+          priority: req.body.priority || 'P3',
           completed: 0,
         };
         tasks = [...tasks, newTask];
@@ -120,6 +121,26 @@ describe('TODO App', () => {
     await user.click(screen.getByTestId('submit-task'));
     await waitFor(() => {
       expect(screen.getByText(/New Test Task/i)).toBeInTheDocument();
+    });
+  });
+
+  test('submits and displays a selected priority', async () => {
+    let submittedPriority;
+    server.use(
+      rest.post('/api/tasks', (req, res, ctx) => {
+        submittedPriority = req.body.priority;
+        return res(ctx.status(201), ctx.json({ id: 3, ...req.body, completed: 0 }));
+      })
+    );
+    const user = userEvent.setup();
+    await act(async () => {
+      render(<App />);
+    });
+    await user.type(screen.getByTestId('title-input'), 'Priority Test Task');
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Task priority' })).getByRole('radio', { name: 'P1' }));
+    await user.click(screen.getByTestId('submit-task'));
+    await waitFor(() => {
+      expect(submittedPriority).toBe('P1');
     });
   });
 

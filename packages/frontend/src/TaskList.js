@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import EventIcon from '@mui/icons-material/Event';
 
-function TaskList({ onEdit }) {
+function TaskList({ onEdit, onPriorityChange }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -220,6 +220,20 @@ function TaskList({ onEdit }) {
                   }}
                 />
               )}
+              <Box className="priority-options" role="radiogroup" aria-label={`Priority for ${task.title}`}>
+                {['P1', 'P2', 'P3'].map((priority) => (
+                  <button
+                    key={priority}
+                    type="button"
+                    className="priority-option"
+                    role="radio"
+                    aria-checked={(task.priority || 'P3') === priority}
+                    onClick={() => onPriorityChange(task, priority)}
+                  >
+                    {priority}
+                  </button>
+                ))}
+              </Box>
               <Box 
                 sx={{ 
                   display: 'flex', 
